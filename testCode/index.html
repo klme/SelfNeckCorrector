@@ -11,6 +11,8 @@
     }
 
     </style>
+    <script src="js/clmtrackr.js"></script>
+    <script src="models/model_pca_20_svm.js"></script>
     <script>
     window.addEventListener("load",initMedia);
 
@@ -19,9 +21,14 @@
       var video = document.getElementById("video");
     	//canvas要素の取得
     	var canvas = document.getElementById("canvas");
+
+      var tracker = new clm.tracker({useWebGL : true});
+      tracker.init(pModel);
+
       canvas.context = canvas.getContext("2d");
     	canvas.width = canvas.clientWidth;
     	canvas.height = canvas.clientHeight;
+
       navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
     	if (navigator.getUserMedia){
     		//ユーザーメディアの設定
@@ -29,6 +36,7 @@
     			function ( stream ){
     				//video要素のsrc属性に映像データのURLを与える
     				video.src = window.URL.createObjectURL( stream );
+            tracker.start(video);
     			},function ( error ){
     				//失敗時にエラーをコンソールへ出力
     				console.log( error );
@@ -43,11 +51,23 @@ function recognition(){
 }
 
 
+function loop() {
+	//映像データの準備状況の確認
+	if (video.readyState === video.HAVE_ENOUGH_DATA ){
+		//現時点で描画されているvideo要素の画像をcanvas要素に出力
+		//canvas.context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    tracker.draw(canvas); // 判定結果をcanvasに描画します。
+    var positions = tracker.getCurrentPosition();
+    console.log(positions);
+	}
+	//ループ関数の再帰呼び出し
+	requestAnimationFrame( loop );
+}
 
     </script>
     </head>
     <body>
-    <video autoplay id="video" style="display: none"></video>
+    <video autoplay id="video"></video>
     <canvas id="canvas"></canvas>
     </body>
 </html>

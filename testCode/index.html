@@ -1,47 +1,53 @@
 <!DOCTYPE html>
 <html>
     <head>
+    <title>clmtracker</title>
+    <style>
+    video#video, canvas#canvas{
+    	width: 640px;  /* 横幅 */
+    	height: 480px; /* 縦幅 */
+    	border: 1px solid black;
+    	overflow:hidden;
+    }
 
-        <link rel="stylesheet" type="text/css" href="css/index.css">
-        <script src="index.js"></script>
-        <script src="js/three.js"></script>
-        <script>
-        window.addEventListener("load",function(){
-          initDOM();
-        });
+    </style>
+    <script>
+    window.addEventListener("load",initMedia);
 
-        function initDOM(){
-          var Mbtn = document.getElementById("meagsure");
-          var Tbtn = document.getElementById("training");
-          Mbtn.addEventListener("click",moveWindow);
-          Tbtn.addEventListener("click",moveWindow2);
+    function initMedia(){
+      //video要素の取得
+      var video = document.getElementById("video");
+    	//canvas要素の取得
+    	var canvas = document.getElementById("canvas");
+      canvas.context = canvas.getContext("2d");
+    	canvas.width = canvas.clientWidth;
+    	canvas.height = canvas.clientHeight;
+      navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+    	if (navigator.getUserMedia){
+    		//ユーザーメディアの設定
+    		navigator.getUserMedia( { video : true },
+    			function ( stream ){
+    				//video要素のsrc属性に映像データのURLを与える
+    				video.src = window.URL.createObjectURL( stream );
+    			},function ( error ){
+    				//失敗時にエラーをコンソールへ出力
+    				console.log( error );
+    			});
+    	}
+    }
 
-
-
-        }
-
-        function moveWindow(){
-          window.open("masure.html");
-          
-
-        }
-
-        function moveWindow2(){
-
-
-        }
-
+function recognition(){
 
 
-        </script>
-        <title>Blance Shoes</title>
+
+}
+
+
+
+    </script>
     </head>
     <body>
-      <div id="home">
-      </div>
-      </div>
-      <div id="meagsure" class="btn">測定</div>
-      <div id="training" class="btn">トレーニング</div>
-
+    <video autoplay id="video" style="display: none"></video>
+    <canvas id="canvas"></canvas>
     </body>
 </html>

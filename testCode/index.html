@@ -14,6 +14,7 @@
     <script src="js/clmtrackr.js"></script>
     <script src="models/model_pca_20_svm.js"></script>
     <script>
+    var tracker = null;
     window.addEventListener("load",initMedia);
 
     function initMedia(){
@@ -21,9 +22,21 @@
       var video = document.getElementById("video");
     	//canvas要素の取得
     	var canvas = document.getElementById("canvas");
-
-      var tracker = new clm.tracker({useWebGL : true});
+      tracker = new clm.tracker({useWebGL : true});
       tracker.init(pModel);
+      console.log(pModel);
+
+      var videoW = video.clientWidth;
+      var videoH = video.clientHeight;
+
+      var windowW = inner.clientWidth;
+      // windowの横幅と動画の横幅の比率を算出
+      var videoRate = windowW / videoW;
+
+      video.width = wireframe.width = windowW;
+      video.height = wireframe.height = videoH * videoRate;
+
+
 
       canvas.context = canvas.getContext("2d");
     	canvas.width = canvas.clientWidth;
@@ -37,6 +50,17 @@
     				//video要素のsrc属性に映像データのURLを与える
     				video.src = window.URL.createObjectURL( stream );
             tracker.start(video);
+            loop();
+
+
+
+
+
+            document.addEventListener("clmtrackrConverged",clmtrackrConvergedHandler);
+            document.addEventListener("clmtrackrLost",clmtrakrLostHandler);
+
+
+
     			},function ( error ){
     				//失敗時にエラーをコンソールへ出力
     				console.log( error );
@@ -44,21 +68,33 @@
     	}
     }
 
-function recognition(){
 
+function clmtrackrConvergedHandler(){
+  document.removeEventListener("clmtrackrConverged",clmtrackrConvergedHandler);
+  document.removeEventListener("clmtrackrLost",clmtrakrLostHandler);
 
 
 }
+
+function clmtrakrLostHandler(){
+  document.removeEventListener("clmtrackrConverged",clmtrackrConvergedHandler);
+  document.removeEventListener("clmtrackrLost",clmtrakrLostHandler);
+}
+
+
+
+
 
 
 function loop() {
 	//映像データの準備状況の確認
 	if (video.readyState === video.HAVE_ENOUGH_DATA ){
 		//現時点で描画されているvideo要素の画像をcanvas要素に出力
-		//canvas.context.drawImage(video, 0, 0, canvas.width, canvas.height);
-    tracker.draw(canvas); // 判定結果をcanvasに描画します。
+		canvas.context.drawImage(video, 0, 0, canvas.width, canvas.height);
     var positions = tracker.getCurrentPosition();
-    console.log(positions);
+    if(positions){
+      tracker.draw(canvas); // 判定結果をcanvasに描画します。
+    }
 	}
 	//ループ関数の再帰呼び出し
 	requestAnimationFrame( loop );

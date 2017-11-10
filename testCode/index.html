@@ -64,7 +64,7 @@
 function clmtrackrConvergedHandler(){
   document.removeEventListener("clmtrackrConverged",clmtrackrConvergedHandler);
   document.removeEventListener("clmtrackrLost",clmtrakrLostHandler);
-
+  alert("get");
 
 }
 
@@ -76,9 +76,7 @@ function clmtrakrLostHandler(){
 //function
 
 
-
-
-
+var eyeDistance =0;
 function loop() {
 	//映像データの準備状況の確認
 	if (video.readyState === video.HAVE_ENOUGH_DATA ){
@@ -87,11 +85,19 @@ function loop() {
     var positions = tracker.getCurrentPosition();
     if(positions){
       tracker.draw(canvas); // 判定結果をcanvasに描画します。
-      console.log(positions);
+      eyeDistance = majorDistance(positions[25],positions[30]);
+      console.log(eyeDistance);
     }
 	}
 	//ループ関数の再帰呼び出し
 	requestAnimationFrame( loop );
+}
+
+function majorDistance(a1,a2){
+  if(Array.isArray(a1)==true&&Array.isArray(a2)==true){
+    return Math.sqrt(Math.pow((a1[0]-a2[0]),2)+Math.pow((a1[1]-a2[1]),2));
+  }
+  return false;
 }
 
     </script>

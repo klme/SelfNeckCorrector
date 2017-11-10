@@ -8,13 +8,36 @@
     	height: 480px; /* 縦幅 */
     	border: 1px solid black;
     	overflow:hidden;
+      position: absolute;
+      top: 0px;
+      left: 0px;
     }
 
+    canvas#canvas{
+      position: absolute;
+      top: 0px;
+      left: 0px;
+      z-index: 10;
+    }
+
+    div#display{
+      position: absolute;
+      top:30px;
+      left:auto;
+    }
+
+    div#value{
+      position: absolute;
+      top:520px;
+
+
+    }
     </style>
     <script src="js/clmtrackr.js"></script>
     <script src="models/model_pca_20_svm.js"></script>
     <script>
     var tracker = null;
+    var displayEye = null;
     window.addEventListener("load",initMedia);
 
     function initMedia(){
@@ -22,15 +45,14 @@
       var video = document.getElementById("video");
     	//canvas要素の取得
     	var canvas = document.getElementById("canvas");
+      displayEye = document.getElementById("eyeDistance");
+
       tracker = new clm.tracker({useWebGL : true});
       tracker.init(pModel);
-      console.log(pModel);
+      //console.log(pModel);
 
       var videoW = video.clientWidth;
       var videoH = video.clientHeight;
-
-      // windowの横幅と動画の横幅の比率を算出
-
       video.width = videoW;
       video.height = videoH;
 
@@ -64,7 +86,6 @@
 function clmtrackrConvergedHandler(){
   document.removeEventListener("clmtrackrConverged",clmtrackrConvergedHandler);
   document.removeEventListener("clmtrackrLost",clmtrakrLostHandler);
-  alert("get");
 
 }
 
@@ -81,12 +102,15 @@ function loop() {
 	//映像データの準備状況の確認
 	if (video.readyState === video.HAVE_ENOUGH_DATA ){
 		//現時点で描画されているvideo要素の画像をcanvas要素に出力
-		canvas.context.drawImage(video, 0, 0, canvas.width, canvas.height);
+		canvas.context.clearRect( 0, 0, canvas.width, canvas.height);
     var positions = tracker.getCurrentPosition();
     if(positions){
       tracker.draw(canvas); // 判定結果をcanvasに描画します。
       eyeDistance = majorDistance(positions[25],positions[30]);
-      console.log(eyeDistance);
+      faceAccel = majorDistance(positions[0],positions[33]);
+      faceAccel2 = majorDistance(positions[14],positions[33]);
+      displayEye.innerHTML = "眉間:"+eyeDistance+ "px";
+
     }
 	}
 	//ループ関数の再帰呼び出し
@@ -94,7 +118,9 @@ function loop() {
 }
 
 function majorDistance(a1,a2){
+  //配列かどうかを判定
   if(Array.isArray(a1)==true&&Array.isArray(a2)==true){
+    //三平方の定理
     return Math.sqrt(Math.pow((a1[0]-a2[0]),2)+Math.pow((a1[1]-a2[1]),2));
   }
   return false;
@@ -103,7 +129,14 @@ function majorDistance(a1,a2){
     </script>
     </head>
     <body>
-    <video autoplay id="video"></video>
-    <canvas id="canvas"></canvas>
+    <div id="display">
+      <canvas id="canvas"></canvas>
+      <video autoplay id="video"></video>
+    </div>
+
+    <div id="value">
+      <span id="eyeDistance"></span>
+      <span id="state"></span>
+    </div>
     </body>
 </html>
